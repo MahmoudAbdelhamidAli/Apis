@@ -10,15 +10,16 @@ namespace Account_Apis.Dtos
     {
         [Required]
         [Range(1, 20)]
-        public string FirstName { get; set; } 
+        public string? FirstName { get; set; } 
         [Required]
         [Range(1, 20)]
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
         [Required]
         [Range(1, 50)]
-        public string Email { get; set; }
+        [EmailAddress]
+        public string? Email { get; set; }
         [Required]
         [Range(1, 20)]
-        public string Password { get; set; }
+        public string? Password { get; set; }
     }
 }
