@@ -6,17 +6,12 @@ using System.Threading.Tasks;
 
 namespace Account_Apis.Dtos
 {
-    public record UserDto
+    public class LoginDto
     {
-        [Required]
-        [Range(1, 20)]
-        public string FirstName { get; set; } 
-        [Required]
-        [Range(1, 20)]
-        public string LastName { get; set; }
         [Required]
         [Range(1, 50)]
         public string Email { get; set; }
+
         [Required]
         [Range(1, 20)]
         public string Password { get; set; }
