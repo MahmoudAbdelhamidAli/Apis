@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Account_Apis.Data;
 using Account_Apis.Dtos;
+using Account_Apis.Interfaces;
 using Account_Apis.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,11 +16,13 @@ namespace Account_Apis.Controllers
     public class UsersController : ControllerBase
     {
         private readonly MyDbContext _context;
-        public UsersController(MyDbContext context)
+        private readonly IAccountRepository _accountRepository;
+        public UsersController(MyDbContext context, IAccountRepository accountRepository)
         {
             _context = context;
+            _accountRepository = accountRepository;
         }
-
+        
         // signup
         [HttpPost]
         [Route("signup")]
@@ -99,6 +102,30 @@ namespace Account_Apis.Controllers
             else
             {
                 return Ok(user);
+            }
+            
+        }
+
+        // forgot password
+        [HttpPost]
+        [Route("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgetPasswordDto forgetPasswordDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // verify if user exists or not by it's email
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == forgetPasswordDto.Email);
+
+            if (user != null)
+            {
+                return Ok("Password sent to your email");
+            }
+            else
+            {
+                return BadRequest("User not found");
             }
         }
     }
