@@ -8,6 +8,7 @@ namespace Account_Apis.Interfaces
 {
     public interface IAccountRepository
     {
+        Task<AppUser> GetUserByEmailAsync(string email);
         Task GenerateForgotPasswordTokenAsync(AppUser user);
     }
 }

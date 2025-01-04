@@ -117,11 +117,12 @@ namespace Account_Apis.Controllers
             }
 
             // verify if user exists or not by it's email
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == forgetPasswordDto.Email);
+            var user = await _accountRepository.GetUserByEmailAsync(forgetPasswordDto.Email);
 
             if (user != null)
             {
-                return Ok("Password sent to your email");
+                await _accountRepository.GenerateForgotPasswordTokenAsync(user);
+                return Ok("Password reset link sent to your email");
             }
             else
             {

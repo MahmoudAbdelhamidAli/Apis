@@ -13,16 +13,20 @@ namespace Account_Apis.Repositories
     {
 
         private readonly UserManager<AppUser> _userManager;
-        private readonly IConfiguration _configuration;
+        
 
         private readonly IEmailService _emailService;
 
-        public AccountRepository(UserManager<AppUser> userManager, IConfiguration configuration, IEmailService emailService)
+        public AccountRepository(UserManager<AppUser> userManager, IEmailService emailService)
         {
             _userManager = userManager;
-            _configuration = configuration;
             _emailService = emailService;
 
+        }
+
+        public async Task<AppUser> GetUserByEmailAsync(string email)
+        {
+            return await _userManager.FindByEmailAsync(email);
         }
 
 

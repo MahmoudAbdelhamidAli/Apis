@@ -1,7 +1,9 @@
 using Account_Apis.Data;
 using Account_Apis.Interfaces;
+using Account_Apis.Models;
 using Account_Apis.Repositories;
 using Account_Apis.Service;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +24,8 @@ builder.Services.AddDbContext<MyDbContext>(options =>
 // 
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+
+builder.Services.Configure<SMTPConfigModel>(builder.Configuration.GetSection("SMTPConfig"));
 
 var app = builder.Build();
 
