@@ -42,7 +42,7 @@ namespace Account_Apis.Repositories
             var email = user.Email;
             var subject = "Reset Password";
             var body = $"Please reset your password by clicking here: ......Tobe continued";
-            await _emailService.SendEmailAsync(email, subject, body);
+            await _emailService.SendEmail(email, subject, body);
         }
 
         

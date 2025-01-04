@@ -8,6 +8,6 @@ namespace Account_Apis.Service
     public interface IEmailService
     {
         // send email
-        Task SendEmailAsync(string email, string subject, string message);
+        Task SendEmail(string email, string subject, string message);
     }
 }
