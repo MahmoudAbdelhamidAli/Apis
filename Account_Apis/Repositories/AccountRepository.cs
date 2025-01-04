@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Account_Apis.Interfaces;
 using Account_Apis.Models;
+using Account_Apis.Service;
 using Microsoft.AspNetCore.Identity;
 
 namespace Account_Apis.Repositories
@@ -14,17 +15,36 @@ namespace Account_Apis.Repositories
         private readonly UserManager<AppUser> _userManager;
         private readonly IConfiguration _configuration;
 
-        public AccountRepository(UserManager<AppUser> userManager, IConfiguration configuration)
+        private readonly IEmailService _emailService;
+
+        public AccountRepository(UserManager<AppUser> userManager, IConfiguration configuration, IEmailService emailService)
         {
             _userManager = userManager;
             _configuration = configuration;
+            _emailService = emailService;
+
         }
 
 
         //  GenerateForgotPasswordTokenAsync
-        public Task GenerateForgotPasswordTokenAsync(AppUser user)
+        public async Task GenerateForgotPasswordTokenAsync(AppUser user)
         {
-            throw new NotImplementedException();
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            if (!string.IsNullOrEmpty(token))
+            {
+                await SendForgotPasswordEmail(user, token);
+            }
         }
+
+        // add private method SendForgotPasswordEmail
+        private async Task SendForgotPasswordEmail(AppUser user, string token)
+        {
+            var email = user.Email;
+            var subject = "Reset Password";
+            var body = $"Please reset your password by clicking here: ......Tobe continued";
+            await _emailService.SendEmailAsync(email, subject, body);
+        }
+
+        
     }
 }
