@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Account_Apis.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Account_Apis.Data
 {
-    public class MyDbContext : DbContext
+    public class MyDbContext : IdentityDbContext<AppUser>
     {
         public MyDbContext(DbContextOptions<MyDbContext> options) : base(options)
         {
