@@ -1,17 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
+using Account_Apis.Models;
+using Microsoft.Extensions.Options;
 
 namespace Account_Apis.Service
 {
     public class EmailService : IEmailService
     {
-        
-        public EmailService()
+        private readonly SMTPConfigModel _smtpConfig;
+        public EmailService(IOptions<SMTPConfigModel> smtpConfig)
         {
+            _smtpConfig = smtpConfig.Value;
         }
 
         public async Task SendEmail(string email, string subject, string message)
@@ -21,17 +25,20 @@ namespace Account_Apis.Service
             {
                 Subject = subject,
                 Body = message,
-                IsBodyHtml = true,
-                From = new MailAddress("...To be continued")
+                From = new MailAddress(_smtpConfig.SenderAddress, _smtpConfig.SenderDisplayName),
+                IsBodyHtml = _smtpConfig.IsBodyHTML
             };
             mail.To.Add(email);
             // add smtp client
+            NetworkCredential networkCredential = new NetworkCredential(_smtpConfig.UserName, _smtpConfig.Password);
+
             SmtpClient smtpClient = new SmtpClient
             {
-                Host = "...To be continued",
-                Port = 587,
-                Credentials = new System.Net.NetworkCredential("...To be continued", "...To be continued"),
-                EnableSsl = true
+                Host = _smtpConfig.Host,
+                Port = _smtpConfig.Port,
+                EnableSsl = _smtpConfig.EnableSSL,
+                UseDefaultCredentials = _smtpConfig.UseDefaultCredentials,
+                Credentials = networkCredential
             };
             // send email
             mail.BodyEncoding = Encoding.Default;
