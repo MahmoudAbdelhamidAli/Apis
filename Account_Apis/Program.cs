@@ -5,6 +5,8 @@ using Account_Apis.Repositories;
 using Account_Apis.Service;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,10 @@ builder.Services.AddSwaggerGen();
 // Add services to the container.
 builder.Services.AddDbContext<MyDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddIdentity<AppUser, IdentityRole>()
+    .AddEntityFrameworkStores<MyDbContext>()
+    .AddDefaultTokenProviders();
 
 // 
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();

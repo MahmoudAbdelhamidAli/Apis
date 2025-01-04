@@ -140,3 +140,4 @@ F:\Apis\Account_Apis\obj\Debug\net8.0\refint\Account_Apis.dll
 F:\Apis\Account_Apis\obj\Debug\net8.0\Account_Apis.pdb
 F:\Apis\Account_Apis\obj\Debug\net8.0\Account_Apis.genruntimeconfig.cache
 F:\Apis\Account_Apis\obj\Debug\net8.0\ref\Account_Apis.dll
+F:\Apis\Account_Apis\bin\Debug\net8.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
