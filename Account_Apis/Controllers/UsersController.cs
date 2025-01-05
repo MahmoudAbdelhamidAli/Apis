@@ -6,7 +6,10 @@ using Account_Apis.Data;
 using Account_Apis.Dtos;
 using Account_Apis.Interfaces;
 using Account_Apis.Models;
+using Account_Apis.Service;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Account_Apis.Controllers
@@ -16,11 +19,19 @@ namespace Account_Apis.Controllers
     public class UsersController : ControllerBase
     {
         private readonly MyDbContext _context;
-        private readonly IAccountRepository _accountRepository;
-        public UsersController(MyDbContext context, IAccountRepository accountRepository)
+        // private readonly IAccountRepository _accountRepository;
+
+        // private readonly UserManager<User> _userManager;
+
+        private readonly IEmailService _emailService;
+
+        
+        public UsersController(MyDbContext context, IEmailService emailService)
         {
             _context = context;
-            _accountRepository = accountRepository;
+            // _accountRepository = accountRepository;
+            // _userManager = userManager;
+            _emailService = emailService;
         }
         
         // signup
@@ -43,6 +54,7 @@ namespace Account_Apis.Controllers
                     FirstName = userDto.FirstName,
                     LastName = userDto.LastName,
                     Email = userDto.Email,
+                    NormalizedEmail=userDto.Email.ToUpperInvariant(),
                     Password = userDto.Password
                 };
 
@@ -106,28 +118,96 @@ namespace Account_Apis.Controllers
             
         }
 
-        // forgot password
-        [HttpPost]
-        [Route("forgot-password")]
-        public async Task<IActionResult> ForgotPassword(ForgetPasswordDto forgetPasswordDto)
+        // delete user
+        [HttpDelete]
+        [Route("delete/{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
         {
-            if (!ModelState.IsValid)
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
+            if (user == null)
             {
-                return BadRequest(ModelState);
-            }
-
-            // verify if user exists or not by it's email
-            var user = await _accountRepository.GetUserByEmailAsync(forgetPasswordDto.Email);
-
-            if (user != null)
-            {
-                await _accountRepository.GenerateForgotPasswordTokenAsync(user);
-                return Ok("Password reset link sent to your email");
+                return NotFound("User not found");
             }
             else
             {
-                return BadRequest("User not found");
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+                return Ok("User deleted successfully");
             }
         }
+
+        // forgot password
+        // [HttpPost]
+        // [Route("forgot-password")]
+        // public async Task<IActionResult> ForgotPassword([FromBody] ForgetPasswordDto forgetPasswordDto)
+        // {
+        //     if (!ModelState.IsValid)
+        //     {
+        //         return BadRequest(ModelState);
+        //     }
+
+
+        //     // verify if user exists or not by it's email
+            
+        //     var user = await _accountRepository.GetUserByEmailAsync(forgetPasswordDto.Email);
+            
+        //     if (user != null)
+        //     {
+        //         await _accountRepository.GenerateForgotPasswordTokenAsync(user);
+        //         ModelState.Clear();
+        //         forgetPasswordDto.EmailSent = true;
+        //         return Ok("Password reset link sent to your email");
+        //     }
+        //     else
+        //     {
+        //         return BadRequest("User not found");
+        //     }
+
+        // }
+
+        // // forgot password in another way
+        // [HttpPost]
+        // [Route("forgot-password-another-way")]
+        // public async Task<IActionResult> ForgotPasswordAnotherWay([FromBody] ForgetPasswordDto forgetPasswordDto)
+        // {
+        //     if (!ModelState.IsValid)
+        //     {
+        //         return BadRequest(ModelState);
+        //     }
+
+        //     // verify if user exists or not by it's email
+        //     var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == forgetPasswordDto.Email);
+        //     if (user != null)
+        //     {
+        //         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        //         var param = new Dictionary<string, string?>
+        //         {
+        //             {"token", token},
+        //             {"email", forgetPasswordDto.Email}
+        //         };
+        //         var callback = QueryHelpers.AddQueryString(forgetPasswordDto.ClientUrl!, param);
+
+        //         return Ok(callback);
+                
+
+        //     }
+        //     else
+        //     {
+        //         return BadRequest("User not found");
+        //     }
+        // }
+
+        // test email sending
+        [HttpGet]
+        [Route("test-email")]
+        public async Task<IActionResult> TestEmail()
+        {
+            var message = new Message(new string[] 
+            {"mahmoud123abdelhamid@gmail.com"}, "Test email", "<h1>Test email</h1>");
+            await _emailService.SendEmail(message);
+
+            return StatusCode(StatusCodes.Status200OK);
+        }
+
     }
 }

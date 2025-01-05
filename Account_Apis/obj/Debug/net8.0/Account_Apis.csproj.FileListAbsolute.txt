@@ -141,3 +141,9 @@ F:\Apis\Account_Apis\obj\Debug\net8.0\Account_Apis.pdb
 F:\Apis\Account_Apis\obj\Debug\net8.0\Account_Apis.genruntimeconfig.cache
 F:\Apis\Account_Apis\obj\Debug\net8.0\ref\Account_Apis.dll
 F:\Apis\Account_Apis\bin\Debug\net8.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+F:\Apis\Account_Apis\bin\Debug\net8.0\MailKit.dll
+F:\Apis\Account_Apis\bin\Debug\net8.0\MimeKit.dll
+F:\Apis\Account_Apis\bin\Debug\net8.0\NETCore.MailKit.dll
+F:\Apis\Account_Apis\bin\Debug\net8.0\BouncyCastle.Cryptography.dll
+F:\Apis\Account_Apis\bin\Debug\net8.0\System.Security.Cryptography.Pkcs.dll
+F:\Apis\Account_Apis\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll

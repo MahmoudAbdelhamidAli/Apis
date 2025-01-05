@@ -12,6 +12,29 @@ var builder = WebApplication.CreateBuilder(args);
 
 /////////////////////////////////////////////mahmoud////////////
 ////////// Add services to the container.
+///
+
+// Add services to the container.
+builder.Services.AddDbContext<MyDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// builder.Services.AddIdentity<AppUser, IdentityRole>()
+//     .AddEntityFrameworkStores<MyDbContext>()
+//     .AddDefaultTokenProviders();
+
+//builder.Services.Configure<SMTPConfigModel>(builder.Configuration.GetSection("SMTPConfig"));
+
+var emailConfig = builder.Configuration
+    .GetSection("SMTPConfig")
+    .Get<SMTPConfigModel>();
+builder.Services.AddSingleton(emailConfig);
+
+
+// builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+
+
+
 builder.Services.AddControllers();
 
 // Add services to the container.
@@ -19,19 +42,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add services to the container.
-builder.Services.AddDbContext<MyDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-builder.Services.AddIdentity<AppUser, IdentityRole>()
-    .AddEntityFrameworkStores<MyDbContext>()
-    .AddDefaultTokenProviders();
-
-// 
-builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-builder.Services.AddScoped<IEmailService, EmailService>();
-
-builder.Services.Configure<SMTPConfigModel>(builder.Configuration.GetSection("SMTPConfig"));
 
 var app = builder.Build();
 

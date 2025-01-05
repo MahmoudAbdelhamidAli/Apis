@@ -34,9 +34,6 @@ namespace Account_Apis.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -121,6 +118,10 @@ namespace Account_Apis.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NormalizedEmail")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

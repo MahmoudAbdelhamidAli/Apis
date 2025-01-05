@@ -26,7 +26,12 @@ namespace Account_Apis.Repositories
 
         public async Task<AppUser> GetUserByEmailAsync(string email)
         {
-            return await _userManager.FindByEmailAsync(email);
+            Console.WriteLine($"Searching for user with email: {email}");
+
+            var user = await _userManager.FindByEmailAsync(email);
+            Console.WriteLine($"Found user: {user?.NormalizedEmail ?? "null"}");
+            
+            return user;
         }
 
 
@@ -43,10 +48,22 @@ namespace Account_Apis.Repositories
         // add private method SendForgotPasswordEmail
         private async Task SendForgotPasswordEmail(AppUser user, string token)
         {
-            var email = user.Email;
+            var email = user.Email.Trim(); // Remove leading/trailing spaces
+            email = new string(email.Where(c => !char.IsControl(c)).ToArray()); // Remove control characters
+            
+            try
+            {
+                var mailAddress = new System.Net.Mail.MailAddress(email); // Validates the email format
+            }
+            catch (FormatException)
+            {
+                // Handle invalid email format error
+                Console.WriteLine($"Invalid email format: {email}");
+                return;
+            }
             var subject = "Reset Password";
             var body = $"Please reset your password by clicking here: ......Tobe continued";
-            await _emailService.SendEmail(email, subject, body);
+            //await _emailService.SendEmail(email, subject, body);
         }
 
         
