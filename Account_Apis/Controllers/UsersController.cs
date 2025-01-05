@@ -46,6 +46,7 @@ namespace Account_Apis.Controllers
             }
 
             // verify if user already exists or not 
+            
             var userExists= await _userManager.FindByEmailAsync(userDto.Email!);
 
             if (userExists != null)
@@ -170,15 +171,11 @@ namespace Account_Apis.Controllers
             }
 
             // verify if user already exists or not 
-            var user1 = _context.Users.FirstOrDefault(u => u.Email == forgetPasswordDto.Email);
+            var user = await _userManager.FindByEmailAsync(forgetPasswordDto.Email!);
+            
 
-            if (user1 != null)
+            if (user != null)
             {
-                IdentityUser user = new ()
-                {
-                    Email = forgetPasswordDto.Email
-                };
-                
 
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var ForgetPasswordLink = Url.Action(nameof(ResetPassword), "Users", new {token ,email = user.Email }, Request.Scheme);
@@ -229,6 +226,7 @@ namespace Account_Apis.Controllers
             }
 
             var user1 = _context.Users.FirstOrDefault(u => u.Email == resetPasswordDto.Email);
+            
 
             if (user1 != null)
             {
