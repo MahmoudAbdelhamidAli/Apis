@@ -87,11 +87,13 @@ namespace Account_Apis.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email && u.Password == loginDto.Password);
+            //var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email && u.Password == loginDto.Password);
 
-            if (user != null)
+            var user = await _userManager.FindByEmailAsync(loginDto.Email!);
+
+            if (user != null && await _userManager.CheckPasswordAsync(user, loginDto.Password!))
             {
-                return Ok(user);
+                return Ok("Login successful");
             }
             else
             {
