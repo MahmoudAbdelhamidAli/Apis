@@ -225,17 +225,11 @@ namespace Account_Apis.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user1 = _context.Users.FirstOrDefault(u => u.Email == resetPasswordDto.Email);
+            var user = await _userManager.FindByEmailAsync(resetPasswordDto.Email!);
             
 
-            if (user1 != null)
+            if (user != null)
             {
-                IdentityUser user = new ()
-                {
-                    Email = resetPasswordDto.Email
-
-                };
-                
 
                 var result = await _userManager.ResetPasswordAsync(user, resetPasswordDto.Token, resetPasswordDto.Password);
 
@@ -249,7 +243,7 @@ namespace Account_Apis.Controllers
                 }
                 else
                 {
-                    return BadRequest("Password reset failed");
+                    return BadRequest("Password reset Successfully");
                 }   
 
             }
