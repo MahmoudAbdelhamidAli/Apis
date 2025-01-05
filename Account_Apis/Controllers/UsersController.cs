@@ -64,7 +64,14 @@ namespace Account_Apis.Controllers
 
             if(result.Succeeded)
             {
-                return Ok("User created successfully");
+                    // send email confirmation
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var comfirmEmailLink = Url.Action(nameof(ConfirmEmail), "Users", new {token,email =user.Email }, Request.Scheme);
+                    var message = new Message(new string[]{ user.Email! }, "Confirm Email", comfirmEmailLink!);
+                    await _emailService.SendEmail(message);
+
+                    return Ok("User created successfully, and email confirmation sent"); 
+
             }
             else
             {
@@ -75,6 +82,35 @@ namespace Account_Apis.Controllers
                 return Ok(ModelState);
             }
             
+        }
+
+        // confirm email
+        [HttpGet]
+        [Route("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail( string token, string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user != null)
+            {
+                var result = await _userManager.ConfirmEmailAsync(user, token);
+                if (result.Succeeded)
+                {
+                    return Ok("Email confirmed successfully");
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError("error", error.Description);
+                    }
+                    return Ok(ModelState);
+                }
+            }
+            else
+            {
+                return BadRequest("User not found");
+            }
+
         }
 
 
