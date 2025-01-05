@@ -107,16 +107,16 @@ namespace Account_Apis.Controllers
         [Route("users")]
         public async Task<IActionResult> GetUsers()
         {
-            var users = await _context.Users.ToListAsync();
+            var users = await _userManager.Users.ToListAsync();
             return Ok(users);
         }
 
         // get user by id
         [HttpGet]
         [Route("user/{id}")]
-        public async Task<IActionResult> GetUserById(int id)
+        public async Task<IActionResult> GetUserById(string id)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
+            var user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
                 return NotFound("User not found");
@@ -131,18 +131,31 @@ namespace Account_Apis.Controllers
         // delete user
         [HttpDelete]
         [Route("delete/{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<IActionResult> DeleteUser(string id)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
+            
+            var user = await _userManager.FindByIdAsync(id);
+
             if (user == null)
             {
                 return NotFound("User not found");
             }
             else
             {
-                _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
-                return Ok("User deleted successfully");
+                
+                var result = await _userManager.DeleteAsync(user);
+                if (result.Succeeded)
+                {
+                    return Ok("User deleted successfully");
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError("error", error.Description);
+                    }
+                    return Ok(ModelState);
+                }
             }
         }
 
