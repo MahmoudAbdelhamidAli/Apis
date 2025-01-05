@@ -26,26 +26,15 @@ namespace Account_Apis.Service
             var emailMessage = CreateEmailMessage(message);
             Send(emailMessage);
 
-            // var email = new MimeMessage();
-            // email.From.Add(new MailboxAddress("Your Name", "mahmoud13abdelhamid@gmail.com"));
-            // email.To.Add(new MailboxAddress("lol", "mahmoud123abdelhamid@gmail.com"));
-            // email.Subject = "Test Email";
-            // email.Body = new TextPart("plain")
-            // {
-            //     Text = "This is a test email."
-            // };
-
-            // using (var smtp = new SmtpClient())
-            // {
-            //     smtp.Connect("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-            //     smtp.Authenticate("mahmoud13abdelhamid@gmail.com", "Mahmoud123**");
-            //     smtp.Send(email);
-            //     smtp.Disconnect(true);
-            // }
         }
 
         private MimeMessage CreateEmailMessage(Message message)
         {
+            if (string.IsNullOrEmpty(message.Content))
+            {
+                throw new ArgumentException("Email content cannot be null or empty", nameof(message.Content));
+            }
+            
             var emailMessage = new MimeMessage();
             emailMessage.From.Add(new MailboxAddress("email",_emailConfig.From));
             emailMessage.To.AddRange(message.To);

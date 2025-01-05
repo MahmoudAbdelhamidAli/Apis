@@ -10,8 +10,5 @@ namespace Account_Apis.Dtos
     {
         [Required, EmailAddress, Display(Name ="Registered email address")]
         public string? Email { get; set; }
-        public bool EmailSent { get; set; }
-
-        public string? ClientUrl { get; set; }
     }
 }

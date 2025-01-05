@@ -30,6 +30,16 @@ var emailConfig = builder.Configuration
 builder.Services.AddSingleton(emailConfig);
 
 
+// for Identity
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<MyDbContext>()
+    .AddDefaultTokenProviders();
+
+// add time out for token
+builder.Services.Configure<DataProtectionTokenProviderOptions>(o =>
+    o.TokenLifespan = TimeSpan.FromHours(5));
+
+
 // builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 

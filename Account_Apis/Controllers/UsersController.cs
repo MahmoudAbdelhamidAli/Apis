@@ -21,16 +21,16 @@ namespace Account_Apis.Controllers
         private readonly MyDbContext _context;
         // private readonly IAccountRepository _accountRepository;
 
-        // private readonly UserManager<User> _userManager;
+        private readonly UserManager<IdentityUser> _userManager;
 
         private readonly IEmailService _emailService;
 
         
-        public UsersController(MyDbContext context, IEmailService emailService)
+        public UsersController(MyDbContext context, IEmailService emailService, UserManager<IdentityUser> userManager)
         {
             _context = context;
             // _accountRepository = accountRepository;
-            // _userManager = userManager;
+            _userManager = userManager;
             _emailService = emailService;
         }
         
@@ -136,77 +136,78 @@ namespace Account_Apis.Controllers
             }
         }
 
-        // forgot password
-        // [HttpPost]
-        // [Route("forgot-password")]
-        // public async Task<IActionResult> ForgotPassword([FromBody] ForgetPasswordDto forgetPasswordDto)
-        // {
-        //     if (!ModelState.IsValid)
-        //     {
-        //         return BadRequest(ModelState);
-        //     }
-
-
-        //     // verify if user exists or not by it's email
-            
-        //     var user = await _accountRepository.GetUserByEmailAsync(forgetPasswordDto.Email);
-            
-        //     if (user != null)
-        //     {
-        //         await _accountRepository.GenerateForgotPasswordTokenAsync(user);
-        //         ModelState.Clear();
-        //         forgetPasswordDto.EmailSent = true;
-        //         return Ok("Password reset link sent to your email");
-        //     }
-        //     else
-        //     {
-        //         return BadRequest("User not found");
-        //     }
-
-        // }
-
-        // // forgot password in another way
-        // [HttpPost]
-        // [Route("forgot-password-another-way")]
-        // public async Task<IActionResult> ForgotPasswordAnotherWay([FromBody] ForgetPasswordDto forgetPasswordDto)
-        // {
-        //     if (!ModelState.IsValid)
-        //     {
-        //         return BadRequest(ModelState);
-        //     }
-
-        //     // verify if user exists or not by it's email
-        //     var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == forgetPasswordDto.Email);
-        //     if (user != null)
-        //     {
-        //         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        //         var param = new Dictionary<string, string?>
-        //         {
-        //             {"token", token},
-        //             {"email", forgetPasswordDto.Email}
-        //         };
-        //         var callback = QueryHelpers.AddQueryString(forgetPasswordDto.ClientUrl!, param);
-
-        //         return Ok(callback);
-                
-
-        //     }
-        //     else
-        //     {
-        //         return BadRequest("User not found");
-        //     }
-        // }
-
-        // test email sending
+        
+        // test email sending 
         [HttpGet]
         [Route("test-email")]
         public async Task<IActionResult> TestEmail()
         {
-            var message = new Message(new string[] 
-            {"mahmoud123abdelhamid@gmail.com"}, "Test email", "<h1>Test email</h1>");
+            var message = new Message(["mahmoud123abdelhamid@gmail.com"], "Test email", "LOOOOL");
             await _emailService.SendEmail(message);
 
             return StatusCode(StatusCodes.Status200OK);
+        }
+        
+
+        // forgot password 
+        [HttpPost]
+        [Route("forgot-password")]
+        public async Task<IActionResult> ForgotPasswordAnotherWay([FromBody] ForgetPasswordDto forgetPasswordDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+             // verify if user already exists or not 
+            var user1 = _context.Users.FirstOrDefault(u => u.Email == forgetPasswordDto.Email);
+
+            if (user1 != null)
+            {
+                IdentityUser user = new ()
+                {
+                    Email = forgetPasswordDto.Email
+                };
+                
+
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var ForgetPasswordLink = Url.Action(nameof(ResetPassword), "Users", new {token ,email = user.Email }, Request.Scheme);
+
+                if (string.IsNullOrEmpty(ForgetPasswordLink))
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Failed to generate the reset password link.");
+                }
+
+                var message = new Message(new string[]{ user.Email! }, "Forget Password Link", ForgetPasswordLink!);
+                await _emailService.SendEmail(message);
+                return Ok("Password reset link sent to your email");
+
+            }
+            else
+            {
+                return BadRequest("User not found");
+            }
+        }
+
+        // reset password
+        [HttpPost]
+        [Route("reset-password")]
+        public async Task<IActionResult> ResetPassword(string token, string email)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var model = new ResetPasswordDto {
+                Token = token,
+                Email = email
+            };
+
+            return Ok(model);
+            
+
+            
         }
 
     }
