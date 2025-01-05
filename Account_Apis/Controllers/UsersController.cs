@@ -34,9 +34,10 @@ namespace Account_Apis.Controllers
             _emailService = emailService;
         }
         
-        // signup
+
+        // sign up using _userManager
         [HttpPost]
-        [Route("signup")]
+        [Route("sign-up")]
         public async Task<IActionResult> SignUp([FromBody] UserDto userDto)
         {
             if (!ModelState.IsValid)
@@ -45,30 +46,36 @@ namespace Account_Apis.Controllers
             }
 
             // verify if user already exists or not 
-            var userExists = _context.Users.FirstOrDefault(u => u.Email == userDto.Email);
+            var userExists= await _userManager.FindByEmailAsync(userDto.Email!);
 
-            if (userExists == null)
-            {
-                var user = new User
-                {
-                    FirstName = userDto.FirstName,
-                    LastName = userDto.LastName,
-                    Email = userDto.Email,
-                    NormalizedEmail=userDto.Email.ToUpperInvariant(),
-                    Password = userDto.Password
-                };
-
-                // addes user to the database
-                await _context.Users.AddAsync(user);
-                await _context.SaveChangesAsync();
-
-                return Ok(user);
-            }
-            else
+            if (userExists != null)
             {
                 return BadRequest("User already exists");
             }
+            // add user to the database
+            IdentityUser user = new ()
+            {
+                UserName = userDto.UserName,
+                SecurityStamp=Guid.NewGuid().ToString(),
+                Email = userDto.Email
+            };
+            var result = await _userManager.CreateAsync(user, userDto.Password!);
+
+            if(result.Succeeded)
+            {
+                return Ok("User created successfully");
+            }
+            else
+            {
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("error", error.Description);
+                }
+                return Ok(ModelState);
+            }
+            
         }
+
 
         // login
         [HttpPost]
@@ -149,17 +156,18 @@ namespace Account_Apis.Controllers
         }
         
 
+
         // forgot password 
         [HttpPost]
         [Route("forgot-password")]
-        public async Task<IActionResult> ForgotPasswordAnotherWay([FromBody] ForgetPasswordDto forgetPasswordDto)
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgetPasswordDto forgetPasswordDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-             // verify if user already exists or not 
+            // verify if user already exists or not 
             var user1 = _context.Users.FirstOrDefault(u => u.Email == forgetPasswordDto.Email);
 
             if (user1 != null)
@@ -189,8 +197,8 @@ namespace Account_Apis.Controllers
             }
         }
 
-        // reset password
-        [HttpPost]
+        // Get reset password
+        [HttpGet]
         [Route("reset-password")]
         public async Task<IActionResult> ResetPassword(string token, string email)
         {
@@ -206,9 +214,53 @@ namespace Account_Apis.Controllers
 
             return Ok(model);
             
-
-            
         }
+
+        // reset password (Update password)
+        [HttpPost]
+        [Route("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user1 = _context.Users.FirstOrDefault(u => u.Email == resetPasswordDto.Email);
+
+            if (user1 != null)
+            {
+                IdentityUser user = new ()
+                {
+                    Email = resetPasswordDto.Email
+
+                };
+                
+
+                var result = await _userManager.ResetPasswordAsync(user, resetPasswordDto.Token, resetPasswordDto.Password);
+
+                if (!result.Succeeded)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError("error", error.Description);
+                    }
+                    return Ok(ModelState);
+                }
+                else
+                {
+                    return BadRequest("Password reset failed");
+                }   
+
+            }
+            else
+            {
+                return BadRequest("User not found");
+            }
+        }
+
+        
+
 
     }
 }
