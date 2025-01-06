@@ -1,16 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Account_Apis.Data;
 using Account_Apis.Dtos;
 using Account_Apis.Interfaces;
 using Account_Apis.Models;
 using Account_Apis.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Account_Apis.Controllers
 {
@@ -25,13 +30,22 @@ namespace Account_Apis.Controllers
 
         private readonly IEmailService _emailService;
 
+        private readonly IConfiguration _configuration;
+
         
-        public UsersController(MyDbContext context, IEmailService emailService, UserManager<IdentityUser> userManager)
+        public UsersController(
+            MyDbContext context, 
+            IEmailService emailService, 
+            UserManager<IdentityUser> userManager
+            // IAccountRepository accountRepository
+            , IConfiguration configuration
+            )
         {
             _context = context;
             // _accountRepository = accountRepository;
             _userManager = userManager;
             _emailService = emailService;
+            _configuration = configuration;
         }
         
 
@@ -124,22 +138,68 @@ namespace Account_Apis.Controllers
                 return BadRequest(ModelState);
             }
 
-            //var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email && u.Password == loginDto.Password);
+            // verify if user already exists or not
 
-            var user = await _userManager.FindByEmailAsync(loginDto.Email!);
+            var user = await _userManager.FindByNameAsync(loginDto.UserName!);
 
             if (user != null && await _userManager.CheckPasswordAsync(user, loginDto.Password!))
             {
-                return Ok("Login successful");
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.UTF8.GetBytes("dhgfhgkgywkuef65wfrw4fijfio3dbhs864f8r43fuj43hf65w5f86wkjmkfe5wfeiw6w8e888d");
+
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(new[]
+                    {
+                        new Claim(ClaimTypes.Name, user.UserName)
+                    }),
+                    Expires = DateTime.UtcNow.AddHours(1),
+                    Issuer = "http://localhost:5033",
+                    Audience = "http://localhost:5033",
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                };
+
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+                var tokenString = tokenHandler.WriteToken(token);
+
+                return Ok(new { Token = tokenString });
+
+                
             }
-            else
-            {
-                return BadRequest("Invalid credentials");
-            }
+            return Unauthorized();
         }
+
+        // get token private function
+        // public string GenerateJwtToken(IdentityUser user, IConfiguration configuration)
+        // {
+        //     var jwtSettings = configuration.GetSection("JwtSettings");
+        //     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]));
+        //     var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        //     var claims = new[]
+        //     {
+        //         new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+        //         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        //         new Claim(ClaimTypes.NameIdentifier, user.Id)
+        //     };
+
+        //     var token = new JwtSecurityToken(
+        //         issuer: jwtSettings["Issuer"],
+        //         audience: jwtSettings["Audience"],
+        //         claims: claims,
+        //         expires: DateTime.UtcNow.AddMinutes(double.Parse(jwtSettings["TokenExpiryMinutes"])),
+        //         signingCredentials: credentials
+        //     );
+
+        //     return new JwtSecurityTokenHandler().WriteToken(token);
+        // }
+
+        
         
         // get all users
+        
         [HttpGet]
+        [Authorize]
         [Route("users")]
         public async Task<IActionResult> GetUsers()
         {
@@ -302,7 +362,22 @@ namespace Account_Apis.Controllers
             }
         }
 
-        
+        // profile
+        [HttpGet]
+        [Authorize]
+        [Route("profile")]
+        public async Task<IActionResult> Profile()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+            else
+            {
+                return Ok(user);
+            }
+        }
 
 
     }
