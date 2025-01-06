@@ -144,18 +144,19 @@ namespace Account_Apis.Controllers
 
             if (user != null && await _userManager.CheckPasswordAsync(user, loginDto.Password!))
             {
+                var jwtSettings = _configuration.GetSection("JWT");
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.UTF8.GetBytes("dhgfhgkgywkuef65wfrw4fijfio3dbhs864f8r43fuj43hf65w5f86wkjmkfe5wfeiw6w8e888d");
+                var key = Encoding.UTF8.GetBytes(jwtSettings["SigningKey"]!);
 
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = new ClaimsIdentity(new[]
                     {
-                        new Claim(ClaimTypes.Name, user.UserName)
+                        new Claim(ClaimTypes.Name, user.UserName!)
                     }),
                     Expires = DateTime.UtcNow.AddHours(1),
-                    Issuer = "http://localhost:5033",
-                    Audience = "http://localhost:5033",
+                    Issuer = jwtSettings["Issuer"],
+                    Audience = jwtSettings["Audience"],
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
                 };
 
@@ -169,32 +170,6 @@ namespace Account_Apis.Controllers
             return Unauthorized();
         }
 
-        // get token private function
-        // public string GenerateJwtToken(IdentityUser user, IConfiguration configuration)
-        // {
-        //     var jwtSettings = configuration.GetSection("JwtSettings");
-        //     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]));
-        //     var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        //     var claims = new[]
-        //     {
-        //         new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-        //         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        //         new Claim(ClaimTypes.NameIdentifier, user.Id)
-        //     };
-
-        //     var token = new JwtSecurityToken(
-        //         issuer: jwtSettings["Issuer"],
-        //         audience: jwtSettings["Audience"],
-        //         claims: claims,
-        //         expires: DateTime.UtcNow.AddMinutes(double.Parse(jwtSettings["TokenExpiryMinutes"])),
-        //         signingCredentials: credentials
-        //     );
-
-        //     return new JwtSecurityTokenHandler().WriteToken(token);
-        // }
-
-        
         
         // get all users
         

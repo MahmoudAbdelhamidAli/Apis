@@ -55,15 +55,16 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
 {
+    var jwtSettings = builder.Configuration.GetSection("JWT");
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = "http://localhost:5033",
-        ValidAudience = "http://localhost:5033",
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("dhgfhgkgywkuef65wfrw4fijfio3dbhs864f8r43fuj43hf65w5f86wkjmkfe5wfeiw6w8e888d"))
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SigningKey"]!))
     };
 });
 
