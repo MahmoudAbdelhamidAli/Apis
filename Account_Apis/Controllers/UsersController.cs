@@ -151,7 +151,8 @@ namespace Account_Apis.Controllers
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = new ClaimsIdentity(new[]
-                    {
+                    {   
+                        new Claim(ClaimTypes.NameIdentifier, user.Id),
                         new Claim(ClaimTypes.Name, user.UserName!)
                     }),
                     Expires = DateTime.UtcNow.AddHours(1),
@@ -163,7 +164,17 @@ namespace Account_Apis.Controllers
                 var token = tokenHandler.CreateToken(tokenDescriptor);
                 var tokenString = tokenHandler.WriteToken(token);
 
-                return Ok(new { Token = tokenString });
+                // send email confirmation
+                // var tokenLink = Url.Action(nameof(ConfirmEmail), "Users", new {tokenString ,email = user.Email }, Request.Scheme);
+
+                // if (string.IsNullOrEmpty(tokenLink))
+                // {
+                //     return StatusCode(StatusCodes.Status500InternalServerError, "Failed to generate login link with the Token.");
+                // }
+
+                // var message = new Message(new string[]{ user.Email! }, "Token Link", tokenLink !);
+                // await _emailService.SendEmail(message);
+                return Ok(new {token = tokenString});
 
                 
             }
@@ -337,22 +348,37 @@ namespace Account_Apis.Controllers
             }
         }
 
-        // profile
+        // Method to retrieve profile information of the logged-in user
         [HttpGet]
-        [Authorize]
         [Route("profile")]
-        public async Task<IActionResult> Profile()
+        [Authorize] 
+        public async Task<IActionResult> GetUserProfile()
         {
-            var user = await _userManager.GetUserAsync(User);
+            // Retrieve the user's ID from the claims
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User is not authenticated.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+
             if (user == null)
             {
-                return NotFound("User not found");
+                return NotFound("User not found.");
             }
-            else
+
+            var userProfile = new UserProfileDto
             {
-                return Ok(user);
-            }
+                Id = user.Id,
+                UserName = user.UserName!,
+                Email = user.Email!
+            };
+
+            return Ok(userProfile);
         }
+
 
 
     }
