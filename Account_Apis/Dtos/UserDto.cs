@@ -8,6 +8,7 @@ namespace Account_Apis.Dtos
 {
     public record UserDto
     {
+        [Required]
         public string? UserName { get; set; } 
         
         [Required]

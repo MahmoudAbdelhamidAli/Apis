@@ -13,9 +13,11 @@ namespace Account_Apis.Models
 
         public string Email { get; set; }
 
-        // normlize email
         public string NormalizedEmail { get; set; }
-        public string Password { get; set; }
+        
+        public string PasswordHash { get; set; }
+
+        public bool IsEmailConfirmed { get; set; } = false;
         
         public int IsActive { get; set; } = 1;
         public DateTime CreatedDate { get; set; } = DateTime.Now;
