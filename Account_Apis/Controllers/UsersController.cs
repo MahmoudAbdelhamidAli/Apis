@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Account_Apis.Constants;
 using Account_Apis.Data;
 using Account_Apis.Dtos;
 using Account_Apis.Interfaces;
@@ -56,7 +57,7 @@ namespace Account_Apis.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(ResponseMessages.InvalidModelState);
             }
 
             // verify if user already exists or not 
@@ -65,7 +66,7 @@ namespace Account_Apis.Controllers
 
             if (userExists != null)
             {
-                return BadRequest("User already exists");
+                return BadRequest(ResponseMessages.UserAlreadyExists);
             }
             // add user to the database
             IdentityUser user = new ()
@@ -84,7 +85,7 @@ namespace Account_Apis.Controllers
                     var message = new Message(new string[]{ user.Email! }, "Confirm Email", comfirmEmailLink!);
                     await _emailService.SendEmail(message);
 
-                    return Ok("User created successfully, and email confirmation sent"); 
+                    return Ok(ResponseMessages.UserCreatedSuccessfully); 
 
             }
             else
@@ -109,7 +110,7 @@ namespace Account_Apis.Controllers
                 var result = await _userManager.ConfirmEmailAsync(user, token);
                 if (result.Succeeded)
                 {
-                    return Ok("Email confirmed successfully");
+                    return Ok(ResponseMessages.EmailConfirmedSuccessfully);
                 }
                 else
                 {
@@ -122,7 +123,7 @@ namespace Account_Apis.Controllers
             }
             else
             {
-                return BadRequest("User not found");
+                return BadRequest(ResponseMessages.UserNotFound);
             }
 
         }
@@ -148,6 +149,7 @@ namespace Account_Apis.Controllers
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var key = Encoding.UTF8.GetBytes(jwtSettings["SigningKey"]!);
 
+                //  Define the Token Descriptor
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = new ClaimsIdentity(new[]
@@ -160,9 +162,9 @@ namespace Account_Apis.Controllers
                     Audience = jwtSettings["Audience"],
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
                 };
-
+                // create JwtSecurityToken
                 var token = tokenHandler.CreateToken(tokenDescriptor);
-                var tokenString = tokenHandler.WriteToken(token);
+                var tokenString = tokenHandler.WriteToken(token); 
 
                 // send email confirmation
                 // var tokenLink = Url.Action(nameof(ConfirmEmail), "Users", new {tokenString ,email = user.Email }, Request.Scheme);
@@ -183,7 +185,6 @@ namespace Account_Apis.Controllers
 
         
         // get all users
-        
         [HttpGet]
         [Authorize]
         [Route("users")]
@@ -201,7 +202,7 @@ namespace Account_Apis.Controllers
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
-                return NotFound("User not found");
+                return NotFound(ResponseMessages.UserNotFound);
             }
             else
             {
@@ -220,7 +221,7 @@ namespace Account_Apis.Controllers
 
             if (user == null)
             {
-                return NotFound("User not found");
+                return NotFound(ResponseMessages.UserNotFound);
             }
             else
             {
@@ -228,7 +229,7 @@ namespace Account_Apis.Controllers
                 var result = await _userManager.DeleteAsync(user);
                 if (result.Succeeded)
                 {
-                    return Ok("User deleted successfully");
+                    return Ok(ResponseMessages.UserDeletedSuccessfully);
                 }
                 else
                 {
@@ -267,6 +268,7 @@ namespace Account_Apis.Controllers
 
             // verify if user already exists or not 
             var user = await _userManager.FindByEmailAsync(forgetPasswordDto.Email!);
+            ;
             
 
             if (user != null)
@@ -277,17 +279,17 @@ namespace Account_Apis.Controllers
 
                 if (string.IsNullOrEmpty(ForgetPasswordLink))
                 {
-                    return StatusCode(StatusCodes.Status500InternalServerError, "Failed to generate the reset password link.");
+                    return StatusCode(StatusCodes.Status500InternalServerError, ResponseMessages.FailedToGenerateResetLink);
                 }
 
                 var message = new Message(new string[]{ user.Email! }, "Forget Password Link", ForgetPasswordLink!);
                 await _emailService.SendEmail(message);
-                return Ok("Password reset link sent to your email");
+                return Ok(ResponseMessages.PasswordResetLinkSent);
 
             }
             else
             {
-                return BadRequest("User not found");
+                return BadRequest(ResponseMessages.UserNotFound);
             }
         }
 
@@ -338,13 +340,13 @@ namespace Account_Apis.Controllers
                 }
                 else
                 {
-                    return BadRequest("Password reset Successfully");
+                    return BadRequest(ResponseMessages.PasswordResetSuccessfully);
                 }   
 
             }
             else
             {
-                return BadRequest("User not found");
+                return BadRequest(ResponseMessages.UserNotFound);
             }
         }
 
@@ -359,14 +361,14 @@ namespace Account_Apis.Controllers
 
             if (string.IsNullOrEmpty(userId))
             {
-                return Unauthorized("User is not authenticated.");
+                return Unauthorized(ResponseMessages.UnauthorizedAccess);
             }
 
             var user = await _userManager.FindByIdAsync(userId);
 
             if (user == null)
             {
-                return NotFound("User not found.");
+                return NotFound(ResponseMessages.UserNotFound);
             }
 
             var userProfile = new UserProfileDto

@@ -51,7 +51,7 @@ namespace Account_Apis.Service
                 try
                 {
                     client.Connect(_emailConfig.smtpServer, _emailConfig.Port, SecureSocketOptions.StartTls);
-                    client.AuthenticationMechanisms.Remove("XOAUTH2");
+                    client.AuthenticationMechanisms.Remove("XOAUTH2"); // Removes unsupported authentication mechanisms
                     client.Authenticate(_emailConfig.UserName, _emailConfig.Password);
                     client.Send(mailMessage);
                 }
@@ -62,7 +62,7 @@ namespace Account_Apis.Service
                 finally
                 {
                     client.Disconnect(true);
-                    client.Dispose();
+                    client.Dispose(); // Cleanup resources
                 }
             }
         }
