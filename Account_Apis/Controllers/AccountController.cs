@@ -116,7 +116,7 @@ namespace Account_Apis.Controllers
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    //new Claim(ClaimTypes.NameIdentifier, user.UserId),
+                    new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                     new Claim(ClaimTypes.Name, user.UserName)
                 }),
                 Expires = DateTime.UtcNow.AddHours(1),
@@ -161,6 +161,53 @@ namespace Account_Apis.Controllers
             await _context.SaveChangesAsync();
 
             return Ok("User deleted successfully.");
+        }
+
+        [HttpPost]
+        [Route("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgetPasswordDto forgetPasswordDto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == forgetPasswordDto.Email);
+            if (user == null) return BadRequest("User not found.");
+
+            var token = Guid.NewGuid().ToString(); // Simulated token
+            var resetPasswordLink = Url.Action(nameof(ResetPassword), "Users", new { token, email = user.Email }, Request.Scheme);
+            var message = new Message(new[] { user.Email }, "Password Reset Link", resetPasswordLink!);
+            await _emailService.SendEmail(message);
+
+            return Ok("Password reset link sent.");
+        }
+
+        [HttpPost]
+        [Route("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == resetPasswordDto.Email);
+            if (user == null) return BadRequest("User not found.");
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(resetPasswordDto.Password);
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            return Ok("Password reset successfully.");
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("profile")]
+        public async Task<IActionResult> GetUserProfile()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized("Unauthorized access.");
+
+            var user = await _context.Users.FindAsync(int.Parse(userId));
+            if (user == null) return NotFound("User not found.");
+
+            return Ok(new { user.UserId, user.UserName, user.Email });
         }
 
     }
