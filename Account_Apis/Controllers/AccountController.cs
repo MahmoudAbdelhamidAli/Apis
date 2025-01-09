@@ -131,5 +131,37 @@ namespace Account_Apis.Controllers
             return Ok(new { token = tokenString });
         }
 
+        [HttpGet]
+        [Authorize]
+        [Route("users")]
+        public async Task<IActionResult> GetUsers()
+        {
+            var users = await _context.Users.Select(u => new { u.UserId, u.UserName, u.Email }).ToListAsync();
+            return Ok(users);
+        }
+
+        [HttpGet]
+        [Route("user/{id}")]
+        public async Task<IActionResult> GetUserById(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound("User not found.");
+
+            return Ok(new { user.UserId, user.UserName, user.Email });
+        }
+
+        [HttpDelete]
+        [Route("delete/{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound("User not found.");
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            return Ok("User deleted successfully.");
+        }
+
     }
 }
