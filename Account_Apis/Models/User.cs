@@ -21,5 +21,8 @@ namespace Account_Apis.Models
         
         public int IsActive { get; set; } = 1;
         public DateTime CreatedDate { get; set; } = DateTime.Now;
+
+        // Navigation property for courses
+        public ICollection<Course> Courses { get; set; }
     }
 }

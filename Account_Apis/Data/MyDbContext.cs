@@ -17,5 +17,22 @@ namespace Account_Apis.Data
         }
         // Add DbSet for User
         public DbSet<User> Users { get; set; }
+
+        public DbSet<Course> Courses { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // one-to-many relationship
+            modelBuilder.Entity<Course>()
+                .HasOne(c => c.User)
+                .WithMany(u => u.Courses)
+                .HasForeignKey(c => c.UserId);
+        }
+
+
+
+        
     }
 }
