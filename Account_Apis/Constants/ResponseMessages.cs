@@ -18,5 +18,8 @@ namespace Account_Apis.Constants
         public const string InvalidModelState = "Invalid model state.";
         public const string UserDeletedSuccessfully = "User deleted successfully";
         public const string EmailSendingFailed = "Failed to send email.";
+
+        public const string InvalidUserNameOrPassword = "Invalid username or password";
+
     }
 }

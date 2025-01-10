@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using BCrypt.Net;
+using BCrypt.Net; 
 
 namespace Account_Apis.Controllers
 {
@@ -28,9 +28,6 @@ namespace Account_Apis.Controllers
     {
         private readonly MyDbContext _context;
         // private readonly IAccountRepository _accountRepository;
-
-        private readonly UserManager<IdentityUser> _userManager;
-
         private readonly IEmailService _emailService;
 
         private readonly IConfiguration _configuration;
@@ -51,13 +48,13 @@ namespace Account_Apis.Controllers
 
 
         [HttpPost]
-        [Route("lol------------------sign-up")]
+        [Route("sign-up")]
         public async Task<IActionResult> SignUp([FromBody] UserDto userDto)
         {
-            if (!ModelState.IsValid) return BadRequest("Invalid input data.");
+            if (!ModelState.IsValid) return BadRequest(ResponseMessages.InvalidModelState);
 
             var userExists = await _context.Users.AnyAsync(u => u.Email == userDto.Email);
-            if (userExists) return BadRequest("User already exists.");
+            if (userExists) return BadRequest(ResponseMessages.UserAlreadyExists);
 
             var user = new User
             {
@@ -75,7 +72,7 @@ namespace Account_Apis.Controllers
             var message = new Message(new[] { user.Email }, "Confirm Email", confirmEmailLink!);
             await _emailService.SendEmail(message);
 
-            return Ok("User created successfully. Please confirm your email.");
+            return Ok(ResponseMessages.UserCreatedSuccessfully);
         }
 
         [HttpGet]
@@ -85,14 +82,14 @@ namespace Account_Apis.Controllers
             // Simulate email confirmation (you can implement actual token logic if needed)
 
             var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == email);
-            if (user == null) return BadRequest("User not found.");
+            if (user == null) return BadRequest(ResponseMessages.UserNotFound);
 
             // Simulate confirming email
             user.IsEmailConfirmed = true;
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
-            return Ok("Email confirmed successfully.");
+            return Ok(ResponseMessages.EmailConfirmedSuccessfully);
         }
 
 
@@ -105,7 +102,7 @@ namespace Account_Apis.Controllers
             var user = await _context.Users.SingleOrDefaultAsync(u => u.UserName == loginDto.UserName);
             if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
             {
-                return Unauthorized("Invalid username or password.");
+                return Unauthorized(ResponseMessages.InvalidUserNameOrPassword);
             }
 
             var jwtSettings = _configuration.GetSection("JWT");
@@ -145,7 +142,7 @@ namespace Account_Apis.Controllers
         public async Task<IActionResult> GetUserById(int id)
         {
             var user = await _context.Users.FindAsync(id);
-            if (user == null) return NotFound("User not found.");
+            if (user == null) return NotFound(ResponseMessages.UserNotFound);
 
             return Ok(new { user.UserId, user.UserName, user.Email });
         }
@@ -155,12 +152,12 @@ namespace Account_Apis.Controllers
         public async Task<IActionResult> DeleteUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
-            if (user == null) return NotFound("User not found.");
+            if (user == null) return NotFound(ResponseMessages.UserNotFound);
 
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
-            return Ok("User deleted successfully.");
+            return Ok(ResponseMessages.UserDeletedSuccessfully);
         }
 
         [HttpPost]
@@ -170,14 +167,14 @@ namespace Account_Apis.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == forgetPasswordDto.Email);
-            if (user == null) return BadRequest("User not found.");
+            if (user == null) return BadRequest(ResponseMessages.UserNotFound);
 
             var token = Guid.NewGuid().ToString(); // Simulated token
-            var resetPasswordLink = Url.Action(nameof(ResetPassword), "Users", new { token, email = user.Email }, Request.Scheme);
+            var resetPasswordLink = Url.Action(nameof(ResetPassword), "Account", new { token, email = user.Email }, Request.Scheme);
             var message = new Message(new[] { user.Email }, "Password Reset Link", resetPasswordLink!);
             await _emailService.SendEmail(message);
 
-            return Ok("Password reset link sent.");
+            return Ok(ResponseMessages.PasswordResetLinkSent);
         }
 
         [HttpPost]
@@ -187,13 +184,13 @@ namespace Account_Apis.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == resetPasswordDto.Email);
-            if (user == null) return BadRequest("User not found.");
+            if (user == null) return BadRequest(ResponseMessages.UserNotFound);
 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(resetPasswordDto.Password);
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
-            return Ok("Password reset successfully.");
+            return Ok(ResponseMessages.PasswordResetSuccessfully);
         }
 
         [HttpGet]
@@ -202,10 +199,10 @@ namespace Account_Apis.Controllers
         public async Task<IActionResult> GetUserProfile()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized("Unauthorized access.");
+            if (string.IsNullOrEmpty(userId)) return Unauthorized(ResponseMessages.UnauthorizedAccess);
 
             var user = await _context.Users.FindAsync(int.Parse(userId));
-            if (user == null) return NotFound("User not found.");
+            if (user == null) return NotFound(ResponseMessages.UserNotFound);
 
             return Ok(new { user.UserId, user.UserName, user.Email });
         }
