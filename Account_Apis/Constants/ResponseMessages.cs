@@ -21,5 +21,9 @@ namespace Account_Apis.Constants
 
         public const string InvalidUserNameOrPassword = "Invalid username or password";
 
+        public const string CourseAddedSuccessfully = "Course added successfully";
+
+        
+
     }
 }
