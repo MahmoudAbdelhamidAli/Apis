@@ -27,7 +27,7 @@ namespace Account_Apis.Controllers
     public class AccountController : ControllerBase
     {
         private readonly MyDbContext _context;
-        // private readonly IAccountRepository _accountRepository;
+        
         private readonly IEmailService _emailService;
 
         private readonly IConfiguration _configuration;
@@ -36,12 +36,12 @@ namespace Account_Apis.Controllers
         public AccountController(
             MyDbContext context, 
             IEmailService emailService, 
-            // IAccountRepository accountRepository
+            
             IConfiguration configuration
             )
         {
             _context = context;
-            // _accountRepository = accountRepository;
+            
             _emailService = emailService;
             _configuration = configuration;
         }
