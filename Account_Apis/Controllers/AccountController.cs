@@ -79,7 +79,7 @@ namespace Account_Apis.Controllers
         [Route("confirm-email")]
         public async Task<IActionResult> ConfirmEmail(string token, string email)
         {
-            // Simulate email confirmation (you can implement actual token logic if needed)
+            // Simulate email confirmation (you can implement actual token logic if you need )
 
             var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == email);
             if (user == null) return BadRequest(ResponseMessages.UserNotFound);
