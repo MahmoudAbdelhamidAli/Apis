@@ -51,45 +51,58 @@ namespace Account_Apis.Controllers
         [Route("sign-up")]
         public async Task<IActionResult> SignUp([FromBody] UserDto userDto)
         {
-            if (!ModelState.IsValid) return BadRequest(ResponseMessages.InvalidModelState);
-
-            var userExists = await _context.Users.AnyAsync(u => u.Email == userDto.Email);
-            if (userExists) return BadRequest(ResponseMessages.UserAlreadyExists);
-
-            var user = new User
+            try
             {
-                UserName = userDto.UserName,
-                Email = userDto.Email,
-                NormalizedEmail = userDto.Email.ToUpper(),
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(userDto.Password) // Hash password
-            };
+                if (!ModelState.IsValid) return BadRequest(ResponseMessages.InvalidModelState);
 
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
+                var userExists = await _context.Users.AnyAsync(u => u.Email == userDto.Email);
+                if (userExists) return BadRequest(ResponseMessages.UserAlreadyExists);
 
-            var token = Guid.NewGuid().ToString(); // Simulated token
-            var confirmEmailLink = Url.Action(nameof(ConfirmEmail), "Account", new { token, email = user.Email }, Request.Scheme);
-            var message = new Message(new[] { user.Email }, "Confirm Email", confirmEmailLink!);
-            await _emailService.SendEmail(message);
+                var user = new User
+                {
+                    UserName = userDto.UserName,
+                    Email = userDto.Email,
+                    NormalizedEmail = userDto.Email.ToUpper(),
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(userDto.Password)
+                };
 
-            return Ok(ResponseMessages.UserCreatedSuccessfully);
+                await _context.Users.AddAsync(user);
+                await _context.SaveChangesAsync();
+
+                var token = Guid.NewGuid().ToString();
+                var confirmEmailLink = Url.Action(nameof(ConfirmEmail), "Account", new { token, email = user.Email }, Request.Scheme);
+                var message = new Message(new[] { user.Email }, "Confirm Email", confirmEmailLink!);
+                await _emailService.SendEmail(message);
+
+                return Ok(ResponseMessages.UserCreatedSuccessfully);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return StatusCode(500, ResponseMessages.InternalServerError);
+            }
         }
 
         [HttpGet]
         [Route("confirm-email")]
         public async Task<IActionResult> ConfirmEmail(string token, string email)
         {
-            // Simulate email confirmation (you can implement actual token logic if you need )
+            try
+            {
+                var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == email);
+                if (user == null) return BadRequest(ResponseMessages.UserNotFound);
 
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == email);
-            if (user == null) return BadRequest(ResponseMessages.UserNotFound);
+                user.IsEmailConfirmed = true;
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
 
-            // Simulate confirming email
-            user.IsEmailConfirmed = true;
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
-
-            return Ok(ResponseMessages.EmailConfirmedSuccessfully);
+                return Ok(ResponseMessages.EmailConfirmedSuccessfully);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return StatusCode(500, ResponseMessages.InternalServerError);
+            }
         }
 
 
@@ -97,35 +110,43 @@ namespace Account_Apis.Controllers
         [Route("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.UserName == loginDto.UserName);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
+            try
             {
-                return Unauthorized(ResponseMessages.InvalidUserNameOrPassword);
-            }
+                if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var jwtSettings = _configuration.GetSection("JWT");
-            var key = Encoding.UTF8.GetBytes(jwtSettings["SigningKey"]!);
-            var tokenHandler = new JwtSecurityTokenHandler();
-
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new[]
+                var user = await _context.Users.SingleOrDefaultAsync(u => u.UserName == loginDto.UserName);
+                if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
                 {
-                    new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                    new Claim(ClaimTypes.Name, user.UserName)
-                }),
-                Expires = DateTime.UtcNow.AddHours(1),
-                Issuer = jwtSettings["Issuer"],
-                Audience = jwtSettings["Audience"],
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
-            };
+                    return Unauthorized(ResponseMessages.InvalidUserNameOrPassword);
+                }
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            var tokenString = tokenHandler.WriteToken(token);
+                var jwtSettings = _configuration.GetSection("JWT");
+                var key = Encoding.UTF8.GetBytes(jwtSettings["SigningKey"]!);
+                var tokenHandler = new JwtSecurityTokenHandler();
 
-            return Ok(new { token = tokenString });
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(new[]
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                        new Claim(ClaimTypes.Name, user.UserName)
+                    }),
+                    Expires = DateTime.UtcNow.AddHours(1),
+                    Issuer = jwtSettings["Issuer"],
+                    Audience = jwtSettings["Audience"],
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
+                };
+
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+                var tokenString = tokenHandler.WriteToken(token);
+
+                return Ok(new { token = tokenString });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return StatusCode(500, ResponseMessages.InternalServerError);
+            }
         }
 
         [HttpGet]
@@ -133,64 +154,104 @@ namespace Account_Apis.Controllers
         [Route("users")]
         public async Task<IActionResult> GetUsers()
         {
-            var users = await _context.Users.Select(u => new { u.UserId, u.UserName, u.Email }).ToListAsync();
-            return Ok(users);
+            try
+            {
+                var users = await _context.Users.Select(u => new { u.UserId, u.UserName, u.Email }).ToListAsync();
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return StatusCode(500, ResponseMessages.InternalServerError);
+            }
         }
 
         [HttpGet]
         [Route("user/{id}")]
         public async Task<IActionResult> GetUserById(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null) return NotFound(ResponseMessages.UserNotFound);
+            try
+            {
+                var user = await _context.Users.FindAsync(id);
+                if (user == null) return NotFound(ResponseMessages.UserNotFound);
 
-            return Ok(new { user.UserId, user.UserName, user.Email });
+                return Ok(new { user.UserId, user.UserName, user.Email });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return StatusCode(500, ResponseMessages.InternalServerError);
+            }
         }
 
         [HttpDelete]
         [Route("delete/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null) return NotFound(ResponseMessages.UserNotFound);
+            try
+            {
+                var user = await _context.Users.FindAsync(id);
+                if (user == null) return NotFound(ResponseMessages.UserNotFound);
 
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
 
-            return Ok(ResponseMessages.UserDeletedSuccessfully);
+                return Ok(ResponseMessages.UserDeletedSuccessfully);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return StatusCode(500, ResponseMessages.InternalServerError);
+            }
         }
 
         [HttpPost]
         [Route("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgetPasswordDto forgetPasswordDto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            try
+            {
+                if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == forgetPasswordDto.Email);
-            if (user == null) return BadRequest(ResponseMessages.UserNotFound);
+                var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == forgetPasswordDto.Email);
+                if (user == null) return BadRequest(ResponseMessages.UserNotFound);
 
-            var token = Guid.NewGuid().ToString(); // Simulated token
-            var resetPasswordLink = Url.Action(nameof(ResetPassword), "Account", new { token, email = user.Email }, Request.Scheme);
-            var message = new Message(new[] { user.Email }, "Password Reset Link", resetPasswordLink!);
-            await _emailService.SendEmail(message);
+                var token = Guid.NewGuid().ToString();
+                var resetPasswordLink = Url.Action(nameof(ResetPassword), "Account", new { token, email = user.Email }, Request.Scheme);
+                var message = new Message(new[] { user.Email }, "Password Reset Link", resetPasswordLink!);
+                await _emailService.SendEmail(message);
 
-            return Ok(ResponseMessages.PasswordResetLinkSent);
+                return Ok(ResponseMessages.PasswordResetLinkSent);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return StatusCode(500, ResponseMessages.InternalServerError);
+            }
         }
 
         [HttpPost]
         [Route("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            try
+            {
+                if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == resetPasswordDto.Email);
-            if (user == null) return BadRequest(ResponseMessages.UserNotFound);
+                var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == resetPasswordDto.Email);
+                if (user == null) return BadRequest(ResponseMessages.UserNotFound);
 
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(resetPasswordDto.Password);
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(resetPasswordDto.Password);
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
 
-            return Ok(ResponseMessages.PasswordResetSuccessfully);
+                return Ok(ResponseMessages.PasswordResetSuccessfully);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return StatusCode(500, ResponseMessages.InternalServerError);
+            }
         }
 
         [HttpGet]
@@ -198,13 +259,21 @@ namespace Account_Apis.Controllers
         [Route("profile")]
         public async Task<IActionResult> GetUserProfile()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized(ResponseMessages.UnauthorizedAccess);
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId)) return Unauthorized(ResponseMessages.UnauthorizedAccess);
 
-            var user = await _context.Users.FindAsync(int.Parse(userId));
-            if (user == null) return NotFound(ResponseMessages.UserNotFound);
+                var user = await _context.Users.FindAsync(int.Parse(userId));
+                if (user == null) return NotFound(ResponseMessages.UserNotFound);
 
-            return Ok(new { user.UserId, user.UserName, user.Email });
+                return Ok(new { user.UserId, user.UserName, user.Email });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return StatusCode(500, ResponseMessages.InternalServerError);
+            }
         }
 
     }

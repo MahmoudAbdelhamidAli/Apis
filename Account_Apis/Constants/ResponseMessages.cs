@@ -23,7 +23,6 @@ namespace Account_Apis.Constants
 
         public const string CourseAddedSuccessfully = "Course added successfully";
 
-        
-
+        public const string InternalServerError = "Internal server error";
     }
 }

@@ -31,45 +31,62 @@ namespace Account_Apis.Controllers
             _context = context;
         }
 
-
-        // add course to login account user (by it's token) 
+        // add course to login account user (by its token)
         [HttpPost]
         [Authorize]
         [Route("add-course")]
         public async Task<IActionResult> AddCourse([FromBody] CourseDto _course)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized(ResponseMessages.UnauthorizedAccess);
-
-            var course = new Course
+            try
             {
-                CourseName = _course.CourseName,
-                Description = _course.Description,
-                UserId = Convert.ToInt32(userId)
-            };
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(ResponseMessages.UnauthorizedAccess);
+                }
 
-            await _context.Courses.AddAsync(course);
-            await _context.SaveChangesAsync();
+                var course = new Course
+                {
+                    CourseName = _course.CourseName,
+                    Description = _course.Description,
+                    UserId = Convert.ToInt32(userId)
+                };
 
-            return Ok(ResponseMessages.CourseAddedSuccessfully);
+                await _context.Courses.AddAsync(course);
+                await _context.SaveChangesAsync();
+
+                return Ok(ResponseMessages.CourseAddedSuccessfully);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+            }
         }
 
-        // get all courses of login account user (by it's token)
-
+        // get all courses of login account user (by its token)
         [HttpGet]
         [Authorize]
         [Route("my-courses")]
         public async Task<IActionResult> GetUserCourses()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized(ResponseMessages.UnauthorizedAccess);
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(ResponseMessages.UnauthorizedAccess);
+                }
 
-            var courses = await _context.Courses
-                .Where(c => c.UserId == int.Parse(userId))
-                .ToListAsync();
+                var courses = await _context.Courses
+                    .Where(c => c.UserId == int.Parse(userId))
+                    .ToListAsync();
 
-            return Ok(courses);
+                return Ok(courses);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+            }
         }
-        
     }
 }
