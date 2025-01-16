@@ -24,5 +24,12 @@ namespace Account_Apis.Models
 
         // Navigation property for courses
         public ICollection<Course> Courses { get; set; }
+
+
+        // foriegn key
+        public int CourseId { get; set; }
+
+        // Navigation property
+        public Course Course { get; set; }
     }
 }

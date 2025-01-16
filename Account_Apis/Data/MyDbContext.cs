@@ -24,11 +24,17 @@ namespace Account_Apis.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // one-to-many relationship
+            // one-to-many relationship (one user can have many courses)
             modelBuilder.Entity<Course>()
                 .HasOne(c => c.User)
                 .WithMany(u => u.Courses)
                 .HasForeignKey(c => c.UserId);
+
+            // one-to-many relationship (one course can have many users)
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Course)
+                .WithMany(c => c.Users)
+                .HasForeignKey(u => u.CourseId);
         }
 
 

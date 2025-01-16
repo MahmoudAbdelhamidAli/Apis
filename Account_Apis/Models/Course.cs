@@ -11,10 +11,17 @@ namespace Account_Apis.Models
         public string CourseName { get; set; }
         public string Description { get; set; }
 
+        
+        public ICollection<User> Users { get; set; }
+        
         // Foreign Key
         public int UserId { get; set; }
 
         // Navigation property
         public User User { get; set; }
+
+        
+
+        
     }
 }
