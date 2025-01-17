@@ -45,7 +45,7 @@ namespace Account_Apis.Controllers
                     return Unauthorized(ResponseMessages.UnauthorizedAccess);
                 }
 
-                // Check if the course already exists (optional logic)
+                // Check if the course already exists
                 var existingCourse = await _context.Courses
                     .FirstOrDefaultAsync(c => c.CourseName == _course.CourseName && c.Description == _course.Description);
 
@@ -90,41 +90,6 @@ namespace Account_Apis.Controllers
             }
         }
 
-        // get all courses of login account user (by its token)
-        [HttpGet]
-        [Authorize]
-        [Route("my-courses")]
-        public async Task<IActionResult> GetUserCourses()
-        {
-            try
-            {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized(ResponseMessages.UnauthorizedAccess);
-                }
-
-                var userIdInt = int.Parse(userId);
-
-                // Retrieve courses associated with the user
-                var courses = await _context.UserCourses
-                    .Where(uc => uc.UserId == userIdInt)
-                    .Include(uc => uc.Course) // Include course details
-                    .Select(uc => new
-                    {
-                        uc.Course.CourseId,
-                        uc.Course.CourseName,
-                        uc.Course.Description
-                    })
-                    .ToListAsync();
-
-                return Ok(courses);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
-            }
-        }
 
         //////////////////////////// 
         // enroll in existing course 
@@ -167,7 +132,7 @@ namespace Account_Apis.Controllers
                 return Ok(ResponseMessages.CourseEnrolledSuccessfully);
             }
             catch (Exception ex)
-            {
+            {   
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
             }
         }
