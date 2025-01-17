@@ -24,17 +24,21 @@ namespace Account_Apis.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // one-to-many relationship (one user can have many courses)
+            // one-to-many relationship (one user can have many courses) ,but no cascading delete
             modelBuilder.Entity<Course>()
                 .HasOne(c => c.User)
                 .WithMany(u => u.Courses)
-                .HasForeignKey(c => c.UserId);
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+                
 
-            // one-to-many relationship (one course can have many users)
+            // one-to-many relationship (one course can have many users) ,but no cascading delete
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Course)
                 .WithMany(c => c.Users)
-                .HasForeignKey(u => u.CourseId);
+                .HasForeignKey(u => u.CourseId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+                
         }
 
 

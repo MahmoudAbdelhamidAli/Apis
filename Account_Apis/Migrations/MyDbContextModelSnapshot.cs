@@ -294,7 +294,6 @@ namespace Account_Apis.Migrations
                     b.HasOne("Account_Apis.Models.User", "User")
                         .WithMany("Courses")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -305,7 +304,6 @@ namespace Account_Apis.Migrations
                     b.HasOne("Account_Apis.Models.Course", "Course")
                         .WithMany("Users")
                         .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Course");

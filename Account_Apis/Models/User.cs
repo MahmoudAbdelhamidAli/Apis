@@ -22,14 +22,15 @@ namespace Account_Apis.Models
         public int IsActive { get; set; } = 1;
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
-        // Navigation property for courses
-        public ICollection<Course> Courses { get; set; }
 
+        // foreign key
 
-        // foriegn key
         public int CourseId { get; set; }
 
-        // Navigation property
         public Course Course { get; set; }
+
+
+        // Navigation property for courses
+        public ICollection<Course> Courses { get; set; }
     }
 }

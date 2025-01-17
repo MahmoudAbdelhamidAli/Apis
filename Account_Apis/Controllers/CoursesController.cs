@@ -32,61 +32,61 @@ namespace Account_Apis.Controllers
         }
 
         // add course to login account user (by its token)
-        [HttpPost]
-        [Authorize]
-        [Route("add-course")]
-        public async Task<IActionResult> AddCourse([FromBody] CourseDto _course)
-        {
-            try
-            {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized(ResponseMessages.UnauthorizedAccess);
-                }
+        // [HttpPost]
+        // [Authorize]
+        // [Route("add-course")]
+        // public async Task<IActionResult> AddCourse([FromBody] CourseDto _course)
+        // {
+        //     try
+        //     {
+        //         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //         if (string.IsNullOrEmpty(userId))
+        //         {
+        //             return Unauthorized(ResponseMessages.UnauthorizedAccess);
+        //         }
 
-                var course = new Course
-                {
-                    CourseName = _course.CourseName,
-                    Description = _course.Description,
-                    UserId = Convert.ToInt32(userId)
-                };
+        //         var course = new Course
+        //         {
+        //             CourseName = _course.CourseName,
+        //             Description = _course.Description,
+        //             UserId = Convert.ToInt32(userId)
+        //         };
 
-                await _context.Courses.AddAsync(course);
-                await _context.SaveChangesAsync();
+        //         await _context.Courses.AddAsync(course);
+        //         await _context.SaveChangesAsync();
 
-                return Ok(ResponseMessages.CourseAddedSuccessfully);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
-            }
-        }
+        //         return Ok(ResponseMessages.CourseAddedSuccessfully);
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+        //     }
+        // }
 
-        // get all courses of login account user (by its token)
-        [HttpGet]
-        [Authorize]
-        [Route("my-courses")]
-        public async Task<IActionResult> GetUserCourses()
-        {
-            try
-            {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Unauthorized(ResponseMessages.UnauthorizedAccess);
-                }
+        // // get all courses of login account user (by its token)
+        // [HttpGet]
+        // [Authorize]
+        // [Route("my-courses")]
+        // public async Task<IActionResult> GetUserCourses()
+        // {
+        //     try
+        //     {
+        //         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //         if (string.IsNullOrEmpty(userId))
+        //         {
+        //             return Unauthorized(ResponseMessages.UnauthorizedAccess);
+        //         }
 
-                var courses = await _context.Courses
-                    .Where(c => c.UserId == int.Parse(userId))
-                    .ToListAsync();
+        //         var courses = await _context.Courses
+        //             .Where(c => c.UserId == int.Parse(userId))
+        //             .ToListAsync();
 
-                return Ok(courses);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
-            }
-        }
+        //         return Ok(courses);
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+        //     }
+        // }
     }
 }

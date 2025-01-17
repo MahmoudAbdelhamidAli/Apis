@@ -12,13 +12,15 @@ namespace Account_Apis.Models
         public string Description { get; set; }
 
         
-        public ICollection<User> Users { get; set; }
         
-        // Foreign Key
+        
+        // // Foreign Key
         public int UserId { get; set; }
 
-        // Navigation property
+        // // Navigation property
         public User User { get; set; }
+
+        public ICollection<User> Users { get; set; }
 
         
 

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Account_Apis.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20250116203822_one-course-have-many-users")]
-    partial class onecoursehavemanyusers
+    [Migration("20250117161915_onetomanylol123")]
+    partial class onetomanylol123
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -297,7 +297,6 @@ namespace Account_Apis.Migrations
                     b.HasOne("Account_Apis.Models.User", "User")
                         .WithMany("Courses")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -308,7 +307,6 @@ namespace Account_Apis.Migrations
                     b.HasOne("Account_Apis.Models.Course", "Course")
                         .WithMany("Users")
                         .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Course");
