@@ -24,5 +24,11 @@ namespace Account_Apis.Constants
         public const string CourseAddedSuccessfully = "Course added successfully";
 
         public const string InternalServerError = "Internal server error";
+
+        // Course
+        public const string CourseNotFound = "Course not found";
+        public const string CourseAlreadyEnrolled = "Course already enrolled";
+        public const string CourseEnrolledSuccessfully = "Course enrolled successfully";
+
     }
 }

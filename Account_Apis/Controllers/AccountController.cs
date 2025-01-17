@@ -79,7 +79,7 @@ namespace Account_Apis.Controllers
             catch (Exception ex)
             {
                 // Log the exception
-                return StatusCode(500, ResponseMessages.InternalServerError);
+                return StatusCode(500,ex.Message);
             }
         }
 

@@ -14,13 +14,15 @@ namespace Account_Apis.Models
         
         
         
-        // // Foreign Key
-        public int UserId { get; set; }
+        // // // Foreign Key
+        // public int UserId { get; set; }
 
-        // // Navigation property
-        public User User { get; set; }
+        // // // Navigation property
+        // public User User { get; set; }
 
-        public ICollection<User> Users { get; set; }
+        // public ICollection<User> Users { get; set; }
+
+        public ICollection<UserCourse> UserCourses { get; set; }
 
         
 

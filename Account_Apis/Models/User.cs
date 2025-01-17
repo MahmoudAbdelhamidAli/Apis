@@ -23,14 +23,16 @@ namespace Account_Apis.Models
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
 
-        // foreign key
+        // // foreign key
 
-        public int CourseId { get; set; }
+        // public int CourseId { get; set; }
 
-        public Course Course { get; set; }
+        // public Course Course { get; set; }
 
 
-        // Navigation property for courses
-        public ICollection<Course> Courses { get; set; }
+        // // Navigation property for courses
+        // public ICollection<Course> Courses { get; set; }
+
+        public ICollection<UserCourse> UserCourses { get; set; }
     }
 }

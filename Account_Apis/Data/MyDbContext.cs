@@ -20,23 +20,25 @@ namespace Account_Apis.Data
 
         public DbSet<Course> Courses { get; set; }
 
+        public DbSet<UserCourse> UserCourses { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // one-to-many relationship (one user can have many courses) ,but no cascading delete
-            modelBuilder.Entity<Course>()
-                .HasOne(c => c.User)
-                .WithMany(u => u.Courses)
-                .HasForeignKey(c => c.UserId)
+            // one-to-many relationship (one user can have many courses) 
+            modelBuilder.Entity<UserCourse>()
+                .HasOne(uc => uc.User)
+                .WithMany(u => u.UserCourses)
+                .HasForeignKey(uc => uc.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
                 
 
-            // one-to-many relationship (one course can have many users) ,but no cascading delete
-            modelBuilder.Entity<User>()
-                .HasOne(u => u.Course)
-                .WithMany(c => c.Users)
-                .HasForeignKey(u => u.CourseId)
+            // one-to-many relationship (one course can have many users) 
+            modelBuilder.Entity<UserCourse>()
+                .HasOne(uc => uc.Course)
+                .WithMany(c => c.UserCourses)
+                .HasForeignKey(uc => uc.CourseId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
                 
         }

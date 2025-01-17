@@ -38,12 +38,7 @@ namespace Account_Apis.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("CourseId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Courses");
                 });
@@ -55,9 +50,6 @@ namespace Account_Apis.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
-
-                    b.Property<int>("CourseId")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -86,9 +78,33 @@ namespace Account_Apis.Migrations
 
                     b.HasKey("UserId");
 
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Account_Apis.Models.UserCourse", b =>
+                {
+                    b.Property<int>("UserCourseId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserCourseId"));
+
+                    b.Property<int>("CourseId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EnrollmentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserCourseId");
+
                     b.HasIndex("CourseId");
 
-                    b.ToTable("Users");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserCourses");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -289,24 +305,21 @@ namespace Account_Apis.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Account_Apis.Models.Course", b =>
-                {
-                    b.HasOne("Account_Apis.Models.User", "User")
-                        .WithMany("Courses")
-                        .HasForeignKey("UserId")
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Account_Apis.Models.User", b =>
+            modelBuilder.Entity("Account_Apis.Models.UserCourse", b =>
                 {
                     b.HasOne("Account_Apis.Models.Course", "Course")
-                        .WithMany("Users")
+                        .WithMany("UserCourses")
                         .HasForeignKey("CourseId")
                         .IsRequired();
 
+                    b.HasOne("Account_Apis.Models.User", "User")
+                        .WithMany("UserCourses")
+                        .HasForeignKey("UserId")
+                        .IsRequired();
+
                     b.Navigation("Course");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -362,12 +375,12 @@ namespace Account_Apis.Migrations
 
             modelBuilder.Entity("Account_Apis.Models.Course", b =>
                 {
-                    b.Navigation("Users");
+                    b.Navigation("UserCourses");
                 });
 
             modelBuilder.Entity("Account_Apis.Models.User", b =>
                 {
-                    b.Navigation("Courses");
+                    b.Navigation("UserCourses");
                 });
 #pragma warning restore 612, 618
         }
