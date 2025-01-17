@@ -46,6 +46,7 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(o =>
 
 // builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<AuthService>();
 
 
 // Add services to the container(JWT)

@@ -32,16 +32,18 @@ namespace Account_Apis.Controllers
 
         private readonly IConfiguration _configuration;
 
+        private readonly AuthService _authService;
+
         
         public AccountController(
             MyDbContext context, 
             IEmailService emailService, 
-            
+            AuthService authService,
             IConfiguration configuration
             )
         {
             _context = context;
-            
+            _authService = authService;
             _emailService = emailService;
             _configuration = configuration;
         }
@@ -119,27 +121,9 @@ namespace Account_Apis.Controllers
                     return Unauthorized(ResponseMessages.InvalidUserNameOrPassword);
                 }
 
-                var jwtSettings = _configuration.GetSection("JWT");
-                var key = Encoding.UTF8.GetBytes(jwtSettings["SigningKey"]!);
-                var tokenHandler = new JwtSecurityTokenHandler();
+                var token = _authService.GenerateJwtToken(user);
 
-                var tokenDescriptor = new SecurityTokenDescriptor
-                {
-                    Subject = new ClaimsIdentity(new[]
-                    {
-                        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                        new Claim(ClaimTypes.Name, user.UserName)
-                    }),
-                    Expires = DateTime.UtcNow.AddHours(1),
-                    Issuer = jwtSettings["Issuer"],
-                    Audience = jwtSettings["Audience"],
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
-                };
-
-                var token = tokenHandler.CreateToken(tokenDescriptor);
-                var tokenString = tokenHandler.WriteToken(token);
-
-                return Ok(new { token = tokenString });
+                return Ok(new { token  });
             }
             catch (Exception ex)
             {
