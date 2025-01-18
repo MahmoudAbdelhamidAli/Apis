@@ -1,0 +1,6 @@
+@CourseMangement.Net_HostAddress = http://localhost:5033
+
+GET {{CourseMangement.Net_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
