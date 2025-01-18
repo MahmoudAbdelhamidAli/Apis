@@ -86,12 +86,10 @@ namespace Account_Apis.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
-
-        //////////////////////////// 
         // enroll in existing course 
         [HttpPost]
         [Authorize]
@@ -133,7 +131,7 @@ namespace Account_Apis.Controllers
             }
             catch (Exception ex)
             {   
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
@@ -167,7 +165,7 @@ namespace Account_Apis.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 

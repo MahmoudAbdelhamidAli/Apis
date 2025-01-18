@@ -95,8 +95,7 @@ namespace Account_Apis.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception
-                return StatusCode(500, ResponseMessages.InternalServerError);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
             
         }
@@ -131,8 +130,7 @@ namespace Account_Apis.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception
-                return StatusCode(500, ResponseMessages.InternalServerError);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
             
         }
@@ -179,8 +177,7 @@ namespace Account_Apis.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception
-                return StatusCode(500, ResponseMessages.InternalServerError);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
             
         }
@@ -197,8 +194,7 @@ namespace Account_Apis.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception
-                return StatusCode(500, ResponseMessages.InternalServerError);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
             
         }
@@ -221,8 +217,7 @@ namespace Account_Apis.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception
-                return StatusCode(500, ResponseMessages.InternalServerError);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
             
         }
@@ -258,8 +253,7 @@ namespace Account_Apis.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception
-                return StatusCode(500, ResponseMessages.InternalServerError);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
             
         }
@@ -277,12 +271,10 @@ namespace Account_Apis.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception
-                return StatusCode(500, ResponseMessages.InternalServerError);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
             
         }
-
 
         // forgot password 
         [HttpPost]
@@ -320,7 +312,7 @@ namespace Account_Apis.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
@@ -346,7 +338,7 @@ namespace Account_Apis.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
@@ -388,7 +380,7 @@ namespace Account_Apis.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
@@ -426,12 +418,9 @@ namespace Account_Apis.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
-
-        
-
 
     }
 }
